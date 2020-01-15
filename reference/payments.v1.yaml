@@ -7,8 +7,10 @@ info:
     name: David Dawson
     email: david.dawson@lianlian.com
 servers:
-  - url: 'https://api.lianlianglobal.com'
+  - url: 'https://api.lianlianglobal.com/payments/v1'
     description: Production
+  - description: Sandbox
+    url: 'https://global-api-sandbox.lianlianpay.com/payments/v1'
 paths:
   /merchants:
     post:
