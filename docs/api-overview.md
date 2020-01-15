@@ -175,57 +175,6 @@ https://api...com/resource/?filter_by="filter"
 }
 ```
 
-# Idempotent Requests
-
-The API supports idempotency for safely retrying requests without accidentally performing the same operation twice. This is useful when an API call is disrupted in transit and you do not receive a response. For example, if a request to create a charge does not respond due to a network connection error, you can retry the request with the same idempotency key to guarantee that no more than one charge is created.
-
-To perform an idempotent request, the client provides an additional header to the request:
-
-```
-Idempotency-Key: {key}
-```
-
-LianLian's idempotency works by saving the resulting status code and body of the first request made for any given idempotency key, regardless of whether it succeeded or failed. Subsequent requests with the same Idempotency-Key return the same result, except for internal 500 errors.
-
-Results are only saved if an API endpoint started executing. If incoming parameters failed validation, or the request conflicted with another that was executing concurrently, no idempotent result is saved because no API endpoint began execution. It is safe to retry these requests.
-
-All **POST** requests accept idempotency keys. Sending idempotency keys in **GET** and **DELETE** requests has no effect and should be avoided, as these requests are idempotent by definition.
-
-# Pagination
-
-All top-level API resources have support for bulk fetches via "list" API methods. For instance, you can list charges, list customers, and list invoices. These list API methods share a common structure, taking at least these three parameters: limit, starting_after, and ending_before.
-
-Stripe utilizes cursor-based pagination via the starting_after and ending_before parameters. Both parameters take an existing object ID value (see below) and return objects in reverse chronological order. The ending_before parameter returns objects listed before the named object. The starting_after parameter returns objects listed after the named object. If both parameters are provided, only ending_before is used.
-
-#### Query Arguments
-
-| Argument | Details | Description |
-|---------|----------|-------------| 
-| limit | optional, default is 10 | A limit on the number of objects to be returned, between 1 and 100. |
-| starting_after | optional | A cursor for use in pagination. starting_after is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with obj_foo, your subsequent call can include starting_after=obj_foo in order to fetch the next page of the list. |
-
-#### Paginated List Response Object
-
-| Field | Type | Description |
-| ---------|----------|-------|
-| data | array | An array containing the actual response elements, paginated by any request parameters. |
-| has_more | boolean | Whether or not there are more elements available after this set. If false, this set comprises the end of the list. |
-| starting_after | string | Next starting_after parameter to use for next page |
-| total | number | Total number of items in list |
-```
-{
-  "total": 252,
-  "has_more": true,
-  "staring_after": "token",
-  "has_more": true,
-  "list": [
-    {
-      "name": "Merchant Name"
-    }
-  ]
-}
-```
-
 # Webhook Endpoints
 
 You can configure webhook endpoints via the API to be notified about events that happen in your Lian Lian Group account.
