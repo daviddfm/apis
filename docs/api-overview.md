@@ -2,10 +2,6 @@
 
 The LianLian API is organized around REST. Our API has predictable resource-oriented URLs, accepts JSON-encoded request bodies, returns JSON-encoded responses, and uses standard HTTP response codes, authentication, and verbs.
 
-You can use it in test mode, which does not affect your live data or interact with the banking networks. The API key you use to authenticate the request determines whether the request is live mode or test mode.
-
-The Sandbox environment will be provided saperately.
-
 # Versioning
 
 When we make backwards-incompatible changes to the API, we release new versions.  The version to use is specified in the URL.  The current version for Collections is v1 such as:
