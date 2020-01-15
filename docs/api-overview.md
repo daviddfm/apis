@@ -11,7 +11,7 @@ The Sandbox environment will be provided saperately.
 When we make backwards-incompatible changes to the API, we release new versions.  The version to use is specified in the URL.  The current version for Collections is v1 such as:
 
 ```
-https://api.lianlianglobal.com/payments/v1/...
+https://api....com/payments/v1/...
 ```
 
 # Authentication
