@@ -129,7 +129,7 @@ Some 4xx errors that could be handled programmatically (e.g., a validation error
 One of ERROR CODES as described in table below
 
 
-### HTTP STATUS CODE SUMMARY 
+### HTTP Status Table
 
 |CODE | DESCRIPTION|
 |---------|----------|
@@ -140,7 +140,7 @@ One of ERROR CODES as described in table below
  |404 | Resource Not Found.	The requested resource doesn't exist.|
  |500 | Internal Server Error. Contact Lianlian Pay for technical support|
 
-### ERROR RESULT
+### Error Result
 
 When a result other than 2xx is returned, an Error Object is returned with further information including Error Code and Message.  There are some general error codes that can happen across APIs but most are particular to the API and defined within that API's documentation.  
 
