@@ -4,7 +4,7 @@ The LianLian API is organized around REST. Our API has predictable resource-orie
 
 # Versioning
 
-When we make backwards-incompatible changes to the API, we release new versions.  The version to use is specified in the URL.  The current version for Collections is v1 such as:
+When we make backwards-incompatible changes to the API, we release new versions.  The version to use is specified in the URL.  The current version for the Payments API is v1 such as:
 
 ```
 https://api....com/payments/v1/...
@@ -20,18 +20,18 @@ Authorization: Basic {token}
 
 Your API keys carry many privileges, so be sure to keep them secure! Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, and so forth.
 
-All API requests must be made over HTTPS. Calls made over plain HTTP will fail. API requests without authentication will also fail.
+All API requests must be made over HTTPS. Calls made over plain HTTP will fail. API requests without authentication will fail.
 
 # Preventing replay attacks
 
-A replay attack is when an attacker intercepts a valid payload and its signature, then re-transmits them. To mitigate such attacks, LianLian includes a timestamp in the LLPAY-Signature header for requests and for responses. Because this timestamp is part of the signed payload, it is also verified by the signature, so an attacker cannot change the timestamp without invalidating the signature. If the signature is valid but the timestamp is too old, the call will be rejected.
+A replay attack is when an attacker intercepts a valid payload and its signature, then re-transmits them. To mitigate such attacks, LianLian includes a timestamp in the **LLPAY-Signature** header for requests and for responses. Because this timestamp is part of the signed payload, it is also verified by the signature, so an attacker cannot change the timestamp without invalidating the signature. If the signature is valid but the timestamp is too old, the call will be rejected.
 
 ### Verifying signatures
 
-The LLPAY-Signature header contains a timestamp and one or more signatures. The timestamp is prefixed by t=, and each signature is prefixed by a scheme. Schemes start with v, followed by an integer. Currently, the only valid signature scheme is v1. 
+The LLPAY-Signature header contains a timestamp and one or more signatures. The timestamp is prefixed by t=, and each signature is prefixed by a scheme. Schemes start with v, potentially followed by an integer. Currently, the only valid signature scheme is v.  When the signature changes it will move to v1, v2, ...
 
 ```
-LLPAY-Signature: t=1492774577, v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd
+LLPAY-Signature: t=1492774577, v=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd
 ```
 
 Note that newlines have been added in the example above for clarity, but a real LLPAY-Signature header will be all one line.
