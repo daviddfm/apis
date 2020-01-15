@@ -157,11 +157,19 @@ See definition of Error Model in API Reference.
 
 # Idempotent Requests
 
-All POST, PUT, and DELETE requests are idempotent for safely retrying requests without accidentally performing the same operation twice. 
+The API supports idempotency for safely retrying requests without accidentally performing the same operation twice. This is useful when an API call is disrupted in transit and you do not receive a response. For example, if a request to create a charge does not respond due to a network connection error, you can retry the request with the same idempotency key to guarantee that no more than one charge is created.
 
-This is useful when an API call is disrupted in transit and you do not receive a response. For example, if a request to create a charge does not respond due to a network connection error, you can retry the request with the same idempotency key to guarantee that no more than one charge is created.
+To perform an idempotent request, the client provides an additional header to the request:
 
-LianLian's idempotency works by saving the resulting status code and body of the first request made for any given idempotency key, regardless of whether it succeeded or failed. Subsequent requests with the same BODY & Signature return the same result, except for internal 500 errors.
+```
+Idempotency-Key: {key}
+```
+
+LianLian's idempotency works by saving the resulting status code and body of the first request made for any given idempotency key, regardless of whether it succeeded or failed. Subsequent requests with the same Idempotency-Key return the same result, except for internal 500 errors.
+
+Results are only saved if an API endpoint started executing. If incoming parameters failed validation, or the request conflicted with another that was executing concurrently, no idempotent result is saved because no API endpoint began execution. It is safe to retry these requests.
+
+All **POST** requests accept idempotency keys. Sending idempotency keys in **GET** and **DELETE** requests has no effect and should be avoided, as these requests are idempotent by definition.
 
 # Request IDs
 
