@@ -602,8 +602,8 @@ components:
         These error codes can occur regardless of API.  For API specific error codes see individual API documentation.
 
         | Code | Message |
-         |------|---------|
-         |999995 | Invalid Parameter|
+        |------|---------|
+        |999995 | Invalid Parameter|
       x-examples: {}
       properties:
         code:
