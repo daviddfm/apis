@@ -133,29 +133,27 @@ One of ERROR CODES as described in table below
 
 |CODE | DESCRIPTION|
 |---------|----------|
-|200 | Bad Request	The request was unacceptable, often due to missing a required parameter.|
-|401 | Unauthorized	No valid API key provided.|
-|402 | Request Failed	The parameters were valid but the request failed.|
-|403 | Forbidden	The API key doesn't have permissions to perform the request.|
-|404 | Not Found	The requested resource doesn't exist.|
-|409 | Conflict	The request conflicts with another request (perhaps due to using the same idempotent key).|
-|429 | Too Many Requests	Too many requests hit the API too quickly. We recommend an exponential backoff of your requests.|
-|500, 502, 503, 504 | Server Errors	Something went wrong on LianLian's end. (These are rare.)|
+|200 | Success. |
+ |400 | API Error. Detailed error codes & error message are included in each API method.|
+ |401 | Unauthorized.	No valid API key provided.|
+ |403 | Forbidden.	The API key doesn't have permissions to perform the request.|
+ |404 | Resource Not Found.	The requested resource doesn't exist.|
+ |500 | Internal Server Error. Contact Lianlian Pay for technical support|
 
+### ERROR RESULT
 
-### ERROR CODES
-|STATUS | CODE | DESCRIPTION|
----------|---------|----------|
-|400 | 10004 | Not good|
+When a result other than 2xx is returned, an Error Object is returned with further information including Error Code and Message.  There are some general error codes that can happen across APIs but most are particular to the API and defined within that API's documentation.  
+
+See definition of Error Model in API Reference.
 
 ### Body
 
 ```
 {
-  "code": "10004",
-  "message": "Not good"
-}
-```
+  "code": "154008",
+  "message": "Client has insufficient balance to pay merchant"
+ }
+ ```
 
 # Idempotent Requests
 

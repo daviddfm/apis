@@ -172,15 +172,16 @@ paths:
                     amount: '19.85'
                     note: rfb
         '400':
-          description: |
-            Codes:
+          description: |-
+            Error - payment not processed
 
-            | Code | Description |
-            |------|------------|
+            | Code | Message |
+            |------|---------|
             |154008 | Client has insufficient balance to pay merchant|
             |154011 | Currency not supported|
             |154016 | Merchant is blocked from receiving payments|
             |154015 | Duplicate payment `client_id` - *This is not the case if the original result is returend* |
+            |999995 | Invalid Parameter|
           content:
             application/json:
               schema:
@@ -592,18 +593,16 @@ components:
         - status
         - registraton_complete
     Error:
-      title: '| Error'
+      title: '| Error Object'
       type: object
-      description: |
+      description: |-
         This object is returned anytime a REST request returns HTTP status other than 2xx.
 
+        These error codes can occur regardless of API.  For API specific error codes see individual API documentation.
+
         | Code | Message |
-        |------|---------|
-        |154008 | Client has insufficient balance to pay merchant|
-        |154011 | Currency not supported|
-        |154016 | Merchant is blocked from receiving payments|
-        |154015 | Duplicate payment `client_id` - *This is not the case if the original result is returend* |
-        |999995 | Invalid Parameter|
+         |------|---------|
+         |999995 | Invalid Parameter|
       x-examples: {}
       properties:
         code:
