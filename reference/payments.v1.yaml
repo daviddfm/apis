@@ -204,7 +204,7 @@ paths:
               properties:
                 client_id:
                   type: string
-                  description: Payment ID according to client
+                  description: "Client's Payment ID for this payment request.  **Must be unique and is usually a UUID**"
                 currency:
                   type: string
                   description: 3 letter code of payment currency
@@ -218,6 +218,7 @@ paths:
                 - client_id
                 - currency
                 - amount
+        description: ''
   /webhook:
     get:
       summary: List All Webhook Endpoints
@@ -676,7 +677,7 @@ components:
           description: Lian Lian Payment ID
         client_id:
           type: string
-          description: "Client's ID for this payment"
+          description: "Client's Payment ID for this payment request.  **Must be unique and is usually a UUID**"
         status:
           x-tags:
             - Payments
