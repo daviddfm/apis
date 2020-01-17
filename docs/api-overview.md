@@ -48,10 +48,18 @@ Create a `payload` string which is the following separated by `&`
 * REQUEST_PAYLOAD: The contents of request body, typically in JSON format  `{"currency":"USD"}`
 * QUERY_STRING: The query string of the URL, URL Encoded.  `attr1%3Dvalue1%26attr2%3Dvalue2`
 
-Example `payload`:
+Put typical GET and POST examples here.
+
+Example POST `payload`:
 ```
-POST&collections/v1/merchants&19879234&{"currency":"USD"}&attr1%3Dvalue1%26attr2%3Dvalue2
+POST&payments/v1/merchants&19879234&{"currency":"USD"}&
 ```
+
+Example GET `payload`:
+```
+GET&payments/v1/payments/602837&19879234&&currency%3DUSD%26currency%3DCNY
+```
+
 
 **Step 2:** Prepare the `LLPAY-Signature` string
 
@@ -119,11 +127,6 @@ LianLian uses conventional HTTP response codes to indicate the success or failur
 
 Some 4xx errors that could be handled programmatically (e.g., a validation error) include an error code that briefly explains the error reported.
 
-#### Attributes
-
-***code*** *number*
-One of ERROR CODES as described in table below
-
 
 ### HTTP Status Table
 
@@ -154,6 +157,11 @@ See definition of Error Model in API Reference.
 # Request IDs
 
 Each API request has an associated request identifier. You can find this value in the response headers, under `Request-Id`. If you need to contact us about a specific request, providing the request identifier will ensure the fastest possible resolution.
+
+
+# Idempotent Requests
+
+Some requests such as the payment POST request are idempotent.  When a repeat request is sent with the same Client ID, the service responds with the same success or failure response as it is assumed the client never received it to begin with.  In any repeat responses, however, a new header `Repeat-Id` is addd and contains the Request Id Of the original response.  In this way the client knows the response is a repeat - this helps in debugging issues.
 
 
 # Argument and Field Naming

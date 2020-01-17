@@ -6,9 +6,6 @@ info:
   contact:
     name: David Dawson
     email: david.dawson@lianlian.com
-servers:
-  - description: Sandbox
-    url: 'https://global-api-sandbox.lianlianpay.com/payments/v1'
 paths:
   /merchants:
     post:
@@ -81,14 +78,14 @@ paths:
                 - redirect_url
       tags:
         - Merchants
-  '/merchants/{merchant_id}':
+  '/merchants/{merchant_client_id}':
     parameters:
       - schema:
           type: string
-        name: merchant_id
+        name: merchant_client_id
         in: path
         required: true
-        description: Lian Lian Merchant ID
+        description: Merchant ID of clint
     get:
       summary: Get Merchant
       tags:
@@ -113,46 +110,8 @@ paths:
                     status: success
       operationId: get-merchants-merchant.id
       description: Get information about the merchant - in particular their status on the Lianlian Pay platform.
-  '/merchants/client_id/{client_id}':
-    parameters:
-      - name: client_id
-        in: path
-        required: true
-        schema:
-          type: string
-        description: Client ID for a Merchant that has alraedy begun registration
-    get:
-      summary: Get Merchant by Client ID
-      tags:
-        - Merchants
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Merchant'
-              examples:
-                Example:
-                  value:
-                    registration_url: null
-                    shop_url: 'https://shop.xxxx.com/C28E07DA61381ECD'
-                    note: test shope
-                    registration_complete: true
-                    shop_name: dingdong
-                    id: '8000002020101011234'
-                    client_id: C28E07DA61381ECD
-                    status: success
-      operationId: get-merchants-lookup-client_id
-      description: "Get information about the merchant based on the Client's ID for that merchant - in particular their status on the Lianlian Pay platform."
-  '/merchants/{merchant_id}/payments':
-    parameters:
-      - name: merchant_id
-        in: path
-        required: true
-        description: Lian Lian Merchant ID
-        schema:
-          type: string
+  /payments:
+    parameters: []
     post:
       summary: Send Payment to Merchant
       operationId: post-merchants-merchant_id-payments
@@ -175,9 +134,9 @@ paths:
           description: |-
             Error - payment not processed
 
-            | Code | Message |
-            |------|---------|
-            |154008 | Client has insufficient balance to pay merchant|
+            | Code | Message | Client Action | LL Action |
+            |------|---------|--|--|
+            |154008 | Client has insufficient balance to pay merchant| Client to wire more funds to LL account | LL to wait for funds |
             |154011 | Currency not supported|
             |154016 | Merchant is blocked from receiving payments|
             |154015 | Duplicate payment `client_id` - *This is not the case if the original result is returend* |
@@ -191,7 +150,7 @@ paths:
                   value:
                     code: '154008'
                     message: Insufficient balance of client.
-      description: "Initiates a payment to specific merchant.\n\nNote this call is Idempotent if sent with the same Signature or if sent with a new Signature but the same client_id.  In either case the original result will be sent back to the client whether the result was error or success.\n\nNote: This synchronous call, on success, only guarantees the money has been debited from the client account.  Actual payment takes too long to be done synchronously and will be completed within a few days typically.\n\nSteps within API:\n\n* **Money Debited** from client's account\n can fail from insufficient funds\n* **Verify Merchant Registration** information is valid\n  If Merchant is unknown, call fails\n  If Merchant status is `blocked`, call fails \n* **Send Money** to merchant\n  If any issues arise, Lianlian Pay customer support helps fix issues and finalize transfer\n\nCall returns payment object including payment status."
+      description: "Switch to using /payments as root of path - and have merchant_client_id in POST body\n\n\nInitiates a payment to specific merchant.\n\nNote this call is Idempotent if sent with the same payment client_id.  In either case the original result will be sent back to the client whether the result was error or success.\n\nNote: This synchronous call, on success, only guarantees the money has been debited from the client account.  Actual payment takes too long to be done synchronously and will be completed within a few days typically.\n\nSteps within API:\n\n* **Money Debited** from client's account\n can fail from insufficient funds\n* **Verify Merchant Registration** information is valid\n  If Merchant is unknown, call fails\n  If Merchant status is `blocked`, call fails \n* **Send Money** to merchant\n  If any issues arise, Lianlian Pay customer support helps fix issues and finalize transfer\n\nCall returns payment object including payment status.\n\n\nFind HTTP 4xx 2xx for duplicate response... and on a duplicate client_id POST respond with that HTTP code and the original response BODY."
       tags:
         - Payments
       requestBody:
@@ -200,7 +159,10 @@ paths:
             schema:
               type: object
               properties:
-                client_id:
+                merchant_client_id:
+                  type: string
+                  description: "Client's Merchant ID to make payment to."
+                payment_client_id:
                   type: string
                   description: "Client's Payment ID for this payment request.  **Must be unique and is usually a UUID**"
                 currency:
@@ -213,9 +175,10 @@ paths:
                   type: string
                   description: Additional information to help track payment
               required:
-                - client_id
+                - payment_client_id
                 - currency
                 - amount
+                - merchant_client_id
         description: ''
   /webhook:
     get:
@@ -404,20 +367,13 @@ paths:
                   type: string
       tags:
         - Webhook Endpoints
-  '/merchants/{merchant_id}/payments/{payment_id}':
+  '/payments/{payment_client_id}':
     parameters:
-      - name: merchant_id
+      - schema:
+          type: string
+        name: payment_client_id
         in: path
         required: true
-        schema:
-          type: string
-        description: Lian Lian Merchant ID
-      - name: payment_id
-        in: path
-        required: true
-        schema:
-          type: string
-        description: Lian Lian Payment ID
     get:
       summary: Get Payment
       tags:
@@ -437,43 +393,13 @@ paths:
                     currency: USD
                     amount: '19.85'
                     note: rfb
-      operationId: get-merchants-merchant_id-payments-payment_id
-      description: "Get a Merchant's Payment Object including status."
-  '/merchants/{merchant_id}/payments/client_id/{client_id}':
-    parameters:
-      - name: merchant_id
-        in: path
-        required: true
-        schema:
-          type: string
-        description: Lian Lian Merchant ID
-      - name: client_id
-        in: path
-        schema:
-          type: string
-        required: true
-        description: "Client's Payment ID"
-    get:
-      summary: Get Payment by Client ID
-      tags:
-        - Payments
-      responses:
-        '200':
-          description: OK
+        '':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Payment'
-              examples:
-                Example:
-                  value:
-                    client_id: DIYE8DFYAU62ALSDOE
-                    status: success
-                    currency: USD
-                    amount: '19.85'
-                    note: rfb
-      operationId: get-merchants-merchant_id-payments-clientid-client_id
-      description: "Get a Merchant's Payment Object including status by Client's Payment ID."
+      operationId: get-merchants-merchant_id-payments-payment_id
+      description: "Get a Merchant's Payment Object including status."
   /balance:
     get:
       summary: Get Client Balance
@@ -552,16 +478,12 @@ components:
           type: string
           description: "Client's ID for this Merchant"
         status:
-          x-tags:
-            - Merchants
-          enum:
-            - pending
-            - need_info
-            - success
-            - fail
-            - redirect
+          type: string
+          title: '| Registration Status Enumeration'
           description: |-
-            State of merchant registration process.  One of:
+            State of merchant registration process.  Will be NULL for brand new merchant that hasn't started registration process.
+
+            One of:
 
             | Value | Description |
             |--------|------------|
@@ -569,8 +491,11 @@ components:
             | need_info | Merchant must communicate with Lian Lian |
             | success | Ready for delivery money to merchant |
             | blocked | User has been blacklisted from receiving payments |
-          title: '| Registration Status Enumeration'
-          type: string
+          enum:
+            - need_info
+            - success
+            - blocked
+            - ongoing
         registration_url:
           type: string
           description: "URL to redirect merchant to in order to start registration on Lianlian Pay platform. \n \nNon-existent if `registration_complete` is true."
@@ -673,28 +598,36 @@ components:
         id:
           type: string
           description: Lian Lian Payment ID
-        client_id:
+        payment_client_id:
           type: string
           description: "Client's Payment ID for this payment request.  **Must be unique and is usually a UUID**"
-        status:
-          x-tags:
-            - Payments
-          enum:
-            - in_progress
-            - need_info
-            - success
-            - returned
+        merchant_id:
+          type: string
+          description: "Lian Lian's Merchant ID receiving payment"
+        merchant_client_id:
+          type: string
+          description: "Client's Merchant ID receiving payment"
+        success:
+          type: boolean
+          description: "true if payment will succeed.  \nfalse if synchronous call failed."
+        success_status:
+          type: string
+          title: '| Payment Status Enumeration'
           description: |-
             State a Payment is in.  One of:
 
             | Value | Description |
             |--------|------------|
-            | ongoing | Money Debited. Payment ongoing normally |
-            | need_info | Money Debited. Merchant must communicate with Lian Lian |
-            | success | Money Debited. Payment complete |
-            | returned | Money Returned to client account |
-          title: '| Payment Status Enumeration'
+            | ongoing | Payment ongoing normally |
+            | need_info | Merchant must communicate with Lian Lian |
+            | success | Payment complete |
+          enum:
+            - in_progress
+            - need_info
+            - success
+        failure_status:
           type: string
+          description: Error code from original payment request
         currency:
           type: string
           description: 3 letter code of currency used
@@ -706,14 +639,21 @@ components:
           description: Human readable note passed into POST /payment
       required:
         - id
-        - client_id
-        - status
+        - payment_client_id
+        - success_status
         - currency
         - amount
         - note
+        - success
+        - failure_status
+        - merchant_client_id
+        - merchant_id
   securitySchemes: {}
 tags:
   - name: Balance
   - name: Merchants
   - name: Payments
   - name: Webhook Endpoints
+servers:
+  - description: Sandbox
+    url: 'https://global-api-sandbox.lianlianpay.com/payments/v1'
