@@ -50,6 +50,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
       description: "Starts asynchronous process of registering a new merchant with Lianlian Pay.  \n\nOn successful return, if `registration_complete` is `false`, platform shall use `registration_url` to redirect the merchant to in order to begin the Lianlian Pay Registration Experience.  \n\nWhen registration is successfully completed the user will be redirected to the passed in `redirect_url`"
       requestBody:
         content:
@@ -78,14 +80,13 @@ paths:
                 - redirect_url
       tags:
         - Merchants
-  '/merchants/{merchant_client_id}':
+  '/merchants/merchant_client_id/{merchant_client_id}':
     parameters:
       - schema:
           type: string
         name: merchant_client_id
         in: path
         required: true
-        description: Merchant ID of clint
     get:
       summary: Get Merchant
       tags:
@@ -139,7 +140,6 @@ paths:
             |154008 | Client has insufficient balance to pay merchant| Client to wire more funds to LL account | LL to wait for funds |
             |154011 | Currency not supported|
             |154016 | Merchant is blocked from receiving payments|
-            |154015 | Duplicate payment `client_id` - *This is not the case if the original result is returend* |
             |999995 | Invalid Parameter|
           content:
             application/json:
@@ -150,7 +150,7 @@ paths:
                   value:
                     code: '154008'
                     message: Insufficient balance of client.
-      description: "Switch to using /payments as root of path - and have merchant_client_id in POST body\n\n\nInitiates a payment to specific merchant.\n\nNote this call is Idempotent if sent with the same payment client_id.  In either case the original result will be sent back to the client whether the result was error or success.\n\nNote: This synchronous call, on success, only guarantees the money has been debited from the client account.  Actual payment takes too long to be done synchronously and will be completed within a few days typically.\n\nSteps within API:\n\n* **Money Debited** from client's account\n can fail from insufficient funds\n* **Verify Merchant Registration** information is valid\n  If Merchant is unknown, call fails\n  If Merchant status is `blocked`, call fails \n* **Send Money** to merchant\n  If any issues arise, Lianlian Pay customer support helps fix issues and finalize transfer\n\nCall returns payment object including payment status.\n\n\nFind HTTP 4xx 2xx for duplicate response... and on a duplicate client_id POST respond with that HTTP code and the original response BODY."
+      description: "Switch to using /payments as root of path - and have merchant_client_id in POST body\n\nInitiates a payment to specific merchant. \n\nNote this call is Idempotent if sent with the same payment_client_id and last payment request was successfull.  In this case the additional HTTP Response Header `Request-Repeated: true` will be returned.  If the original request failed, a new payment request will retry the payment.\n\nNote: This synchronous call, on success, only guarantees the money has been debited from the client account.  Actual payment takes too long to be done synchronously and will be completed within a few days typically.\n\nSteps within API:\n\n* **Money Debited** from client's account\n can fail from insufficient funds\n* **Verify Merchant Registration** information is valid\n  If Merchant is unknown, call fails\n  If Merchant status is `blocked`, call fails \n* **Send Money** to merchant\n  If any issues arise, Lianlian Pay customer support helps fix issues and finalize transfer\n\nCall returns payment object including payment status."
       tags:
         - Payments
       requestBody:
@@ -367,7 +367,7 @@ paths:
                   type: string
       tags:
         - Webhook Endpoints
-  '/payments/{payment_client_id}':
+  '/payments/payment_client_id/{payment_client_id}':
     parameters:
       - schema:
           type: string
@@ -393,12 +393,16 @@ paths:
                     currency: USD
                     amount: '19.85'
                     note: rfb
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
         '':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Payment'
-      operationId: get-merchants-merchant_id-payments-payment_id
+      operationId: get-merchants-merchant_id-payments-client_id-payment_id
       description: "Get a Merchant's Payment Object including status."
   /balance:
     get:
@@ -454,7 +458,7 @@ paths:
             type: string
           in: query
           name: currency
-          description: Repeat parameter to specify 1 or more 3 letter currency codes to return balance in.
+          description: Repeat parameter to specify one 3 letter currency codes to return balance in.
       description: "Returns Total balance of client's account within Lianlian Pay in one or more currencies.  Not specifying a currency will return the default currencies configured for client.  \n\nTypically this is USD & CNY."
     parameters: []
 components:
@@ -474,7 +478,7 @@ components:
             Lianlian Pay merchant ID. Merchant shall use this ID to contact Lianlian Pay for any payment issues.
 
             Non-existant if `registraton_complete` is false.
-        client_id:
+        merchant_client_id:
           type: string
           description: "Client's ID for this Merchant"
         status:
@@ -515,7 +519,7 @@ components:
             | true| Merchant registration complete, platform can issue payment to this merchant |
             | false| Merchant registration not complete yet, platform cannot issue payment to this merchant |
       required:
-        - client_id
+        - merchant_client_id
         - status
         - registraton_complete
     Error:
@@ -607,10 +611,7 @@ components:
         merchant_client_id:
           type: string
           description: "Client's Merchant ID receiving payment"
-        success:
-          type: boolean
-          description: "true if payment will succeed.  \nfalse if synchronous call failed."
-        success_status:
+        status:
           type: string
           title: '| Payment Status Enumeration'
           description: |-
@@ -622,12 +623,9 @@ components:
             | need_info | Merchant must communicate with Lian Lian |
             | success | Payment complete |
           enum:
-            - in_progress
             - need_info
             - success
-        failure_status:
-          type: string
-          description: Error code from original payment request
+            - ongoing
         currency:
           type: string
           description: 3 letter code of currency used
@@ -640,14 +638,11 @@ components:
       required:
         - id
         - payment_client_id
-        - success_status
+        - merchant_id
+        - merchant_client_id
         - currency
         - amount
         - note
-        - success
-        - failure_status
-        - merchant_client_id
-        - merchant_id
   securitySchemes: {}
 tags:
   - name: Balance
@@ -656,4 +651,4 @@ tags:
   - name: Webhook Endpoints
 servers:
   - description: Sandbox
-    url: 'https://global-api-sandbox.lianlianpay.com/payments/v1'
+    url: 'https://global-api-sandbox.lianlianpay-inc.com/payments/v1'
