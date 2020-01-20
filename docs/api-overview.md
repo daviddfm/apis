@@ -52,7 +52,7 @@ Put typical GET and POST examples here.
 
 Example POST `payload`:
 ```
-POST&payments/v1/merchants&19879234&{"currency":"USD"}&
+POST&payments/v1/merchants&19879234&{"currency":"USD"}
 ```
 
 Example GET `payload`:
