@@ -509,7 +509,7 @@ components:
         note:
           type: string
           description: Human readable description of Merchant
-        registraton_complete:
+        registration_complete:
           type: boolean
           description: |-
             State of merchant registration process.  One of:
@@ -521,7 +521,7 @@ components:
       required:
         - merchant_client_id
         - status
-        - registraton_complete
+        - registration_complete
     Error:
       title: '| Error Object'
       type: object
