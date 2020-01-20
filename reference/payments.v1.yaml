@@ -43,15 +43,18 @@ paths:
           description: |
             Codes:
 
-            | Code | Description |
-            |------|------------|
-            |999995 | Invalid Parameter |
+            | Code | Description |Client Action | Lianlian Pay Action |
+            |------|------------|---------|---------|
+            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlina Pay.|Lianlian Pay to wait for a new request|
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '404':
-          description: Not Found
+              examples:
+                example-1:
+                  value:
+                    code: '999995'
+                    message: Invalid Parameter.
       description: "Starts asynchronous process of registering a new merchant with Lianlian Pay.  \n\nOn successful return, if `registration_complete` is `false`, platform shall use `registration_url` to redirect the merchant to in order to begin the Lianlian Pay Registration Experience.  \n\nWhen registration is successfully completed the user will be redirected to the passed in `redirect_url`"
       requestBody:
         content:
@@ -109,6 +112,8 @@ paths:
                     id: '8000002020101011234'
                     client_id: C28E07DA61381ECD
                     status: success
+        '404':
+          description: Not Found
       operationId: get-merchants-merchant.id
       description: Get information about the merchant - in particular their status on the Lianlian Pay platform.
   /payments:
@@ -135,12 +140,12 @@ paths:
           description: |-
             Error - payment not processed
 
-            | Code | Message | Client Action | LL Action |
+            | Code | Message | Client Action | Lianlian Pay Action |
             |------|---------|--|--|
-            |154008 | Client has insufficient balance to pay merchant| Client to wire more funds to LL account | LL to wait for funds |
-            |154011 | Currency not supported|
-            |154016 | Merchant is blocked from receiving payments|
-            |999995 | Invalid Parameter|
+            |154008 | Client has insufficient balance to pay merchant| Client to wire more funds to Lianlian Pay account | Lianlian Pay to wait for funds |
+            |154011 | Currency not supported| Client validates Currency used in request. Supported currency: **USD**, **CNY** |Lianlian Pay to wait for a new request|
+            |154016 | Merchant is blocked from receiving payments| Suggest merchant to contact Lianlian Pay for details |Lianlian Pay to wait for merchant updates information on Lianlian Pay portal|
+            |999995 | Invalid Parameter|Client updates request body values according to error code returned by Lianlina Pay.|ianlian Pay to wait for a new request|
           content:
             application/json:
               schema:
@@ -149,7 +154,7 @@ paths:
                 Example:
                   value:
                     code: '154008'
-                    message: Insufficient balance of client.
+                    message: Client has insufficient balance to pay merchant.
       description: "Switch to using /payments as root of path - and have merchant_client_id in POST body\n\nInitiates a payment to specific merchant. \n\nNote this call is Idempotent if sent with the same payment_client_id and last payment request was successfull.  In this case the additional HTTP Response Header `Request-Repeated: true` will be returned.  If the original request failed, a new payment request will retry the payment.\n\nNote: This synchronous call, on success, only guarantees the money has been debited from the client account.  Actual payment takes too long to be done synchronously and will be completed within a few days typically.\n\nSteps within API:\n\n* **Money Debited** from client's account\n can fail from insufficient funds\n* **Verify Merchant Registration** information is valid\n  If Merchant is unknown, call fails\n  If Merchant status is `blocked`, call fails \n* **Send Money** to merchant\n  If any issues arise, Lianlian Pay customer support helps fix issues and finalize transfer\n\nCall returns payment object including payment status."
       tags:
         - Payments
@@ -285,6 +290,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Webhook-Endpoint'
+        '404':
+          description: Not Found
       operationId: get-webhook-webhook_id
       description: Retrieves the webhook endpoint with the given ID
       tags:
@@ -295,6 +302,8 @@ paths:
       responses:
         '200':
           description: OK
+        '404':
+          description: Not Found
       description: Deletes webhook endpoint configuration
       tags:
         - Webhook Endpoints
@@ -338,6 +347,8 @@ paths:
                     url: 'https://example.com/my/webhook/endpoint'
                 type: object
                 title: '| Webhook Endpoint Object'
+        '404':
+          description: Not Found
       description: Edit a Webhook Endpoint
       parameters: []
       requestBody:
@@ -393,8 +404,6 @@ paths:
                     currency: USD
                     amount: '19.85'
                     note: rfb
-        '400':
-          description: Bad Request
         '404':
           description: Not Found
         '':
@@ -439,10 +448,10 @@ paths:
           description: |-
             Codes:
 
-            | Code | Description |
-            |------|------------|
-            |154011 | Currency not supported|
-            |999995 | Invalid Parameter|
+            | Code | Description |Client Action | Lianlian Pay Action |
+            |------|------------|--------------|-------------|
+            |154011 | Currency not supported|Client validates Currency used in request. Supported currency: **USD**, **CNY** |Lianlian Pay to wait for a new request|
+            |999995 | Invalid Parameter|Client updates request body values according to error code returned by Lianlina Pay.|Lianlian Pay to wait for a new request|
           content:
             application/json:
               schema:
