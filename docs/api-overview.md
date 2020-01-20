@@ -52,13 +52,14 @@ Put typical GET and POST examples here.
 
 Example POST `payload`:
 ```
-POST&payments/v1/merchants&19879234&{"currency":"USD"}&
+POST&payments/v1/merchants&19879234&{"currency":"USD"}
 ```
 
 Example GET `payload`:
 ```
-GET&payments/v1/payments/602837&19879234&&currency%3DUSD%26currency%3DCNY
+GET&payments/v1/payments/602837&19879234&&amp;currency%3DUSD
 ```
+
 
 
 **Step 2:** Prepare the `LLPAY-Signature` string

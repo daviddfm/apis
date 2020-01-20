@@ -642,7 +642,6 @@ components:
         - merchant_client_id
         - currency
         - amount
-        - note
   securitySchemes: {}
 tags:
   - name: Balance
