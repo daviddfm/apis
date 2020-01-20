@@ -21,37 +21,35 @@ paths:
               examples:
                 Example 1:
                   value:
-                    registration_url: 'https://example.lianlianpay.com/register/SADIS1FYOAWEBRAILKRYF32'
-                    shop_url: 'https://shop.xxxx.com/C28E07DA61381ECD'
-                    note: test shope
-                    registration_complete: false
-                    shop_name: dingdong
-                    client_id: C28E07DA61381ECD
-                    status: null
-                    id: null
+                    note: rft
+                    registration_complete: true
+                    merchant_client_id: wish001
+                    shop_url: 'https://www.wish.com/merchant/wish001'
+                    id: '8866003800000564'
+                    status: success
                 Example 2:
                   value:
-                    registration_url: null
-                    shop_url: 'https://shop.xxxx.com/C28E07DA61381ECD'
-                    note: test shope
-                    registration_complete: true
-                    shop_name: dingdong
-                    id: '8000002020101011234'
-                    client_id: C28E07DA61381ECD
-                    status: success
+                    note: rft
+                    registration_complete: false
+                    merchant_client_id: wish002
+                    registration_url: 'https://gtest.lianlianpay-inc.com/auth/platform?platformName=WISH&handleCode=e458644e-f0bb-4536-a42a-d02c7020946d'
+                    shop_url: 'https://www.wish.com/merchant/wish002'
         '400':
           description: |
             Codes:
 
-            | Code | Description |
-            |------|------------|
-            |999995 | Invalid Parameter |
+            | Code | Description |Client Action | Lianlian Pay Action |
+            |------|------------|---------|---------|
+            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlina Pay.|Lianlian Pay to wait for a new request|
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '404':
-          description: Not Found
+              examples:
+                '999995':
+                  value:
+                    code: '999995'
+                    message: "[merchant_client_id] can't be empty."
       description: "Starts asynchronous process of registering a new merchant with Lianlian Pay.  \n\nOn successful return, if `registration_complete` is `false`, platform shall use `registration_url` to redirect the merchant to in order to begin the Lianlian Pay Registration Experience.  \n\nWhen registration is successfully completed the user will be redirected to the passed in `redirect_url`"
       requestBody:
         content:
@@ -59,7 +57,7 @@ paths:
             schema:
               type: object
               properties:
-                client_id:
+                merchant_client_id:
                   type: string
                   description: Merchant ID as known by the client platform
                 store_name:
@@ -75,7 +73,7 @@ paths:
                   type: string
                   description: Note to be used by customer support if needed
               required:
-                - client_id
+                - merchant_client_id
                 - store_name
                 - redirect_url
       tags:
@@ -101,14 +99,13 @@ paths:
               examples:
                 Example:
                   value:
-                    registration_url: null
-                    shop_url: 'https://shop.xxxx.com/C28E07DA61381ECD'
-                    note: test shope
                     registration_complete: true
-                    shop_name: dingdong
-                    id: '8000002020101011234'
-                    client_id: C28E07DA61381ECD
+                    merchant_client_id: wish001
+                    shop_url: 'https://www.wish.com/merchant/wish001'
+                    id: '8866003800000564'
                     status: success
+        '404':
+          description: Not Found
       operationId: get-merchants-merchant.id
       description: Get information about the merchant - in particular their status on the Lianlian Pay platform.
   /payments:
@@ -126,30 +123,41 @@ paths:
               examples:
                 Example:
                   value:
-                    client_id: DIYE8DFYAU62ALSDOE
-                    status: ongoing
+                    merchant_client_id: test1021
+                    note: USD
+                    payment_client_id: wish001
+                    amount: '123.30'
                     currency: USD
-                    amount: '19.85'
-                    note: rfb
+                    id: '2020012026476843'
+                    merchant_id: '8866003600000853'
+                    status: ongoing
         '400':
           description: |-
             Error - payment not processed
 
-            | Code | Message | Client Action | LL Action |
+            | Code | Message | Client Action | Lianlian Pay Action |
             |------|---------|--|--|
-            |154008 | Client has insufficient balance to pay merchant| Client to wire more funds to LL account | LL to wait for funds |
-            |154011 | Currency not supported|
-            |154016 | Merchant is blocked from receiving payments|
-            |999995 | Invalid Parameter|
+            |154008 | Client has insufficient balance to pay merchant| Client to wire more funds to Lianlian Pay account | Lianlian Pay to wait for funds |
+            |154011 | Currency not supported| Client validates Currency used in request. Supported currency: **USD**, **CNY** |Lianlian Pay to wait for a new request|
+            |154016 | Merchant is blocked from receiving payments| Suggest merchant to contact Lianlian Pay for details |Lianlian Pay to wait for merchant updates information on Lianlian Pay portal|
+            |999995 | Invalid Parameter|Client updates request body values according to error code returned by Lianlina Pay.|ianlian Pay to wait for a new request|
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
               examples:
-                Example:
+                '154011':
                   value:
-                    code: '154008'
-                    message: Insufficient balance of client.
+                    code: '154011'
+                    message: Currency not supported.
+                '154016':
+                  value:
+                    code: '154016'
+                    message: Merchant is blocked from receiving payments.
+                '999995':
+                  value:
+                    code: '999995'
+                    message: "[merchant_client_id] can't be empty."
       description: "Switch to using /payments as root of path - and have merchant_client_id in POST body\n\nInitiates a payment to specific merchant. \n\nNote this call is Idempotent if sent with the same payment_client_id and last payment request was successfull.  In this case the additional HTTP Response Header `Request-Repeated: true` will be returned.  If the original request failed, a new payment request will retry the payment.\n\nNote: This synchronous call, on success, only guarantees the money has been debited from the client account.  Actual payment takes too long to be done synchronously and will be completed within a few days typically.\n\nSteps within API:\n\n* **Money Debited** from client's account\n can fail from insufficient funds\n* **Verify Merchant Registration** information is valid\n  If Merchant is unknown, call fails\n  If Merchant status is `blocked`, call fails \n* **Send Money** to merchant\n  If any issues arise, Lianlian Pay customer support helps fix issues and finalize transfer\n\nCall returns payment object including payment status."
       tags:
         - Payments
@@ -285,6 +293,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Webhook-Endpoint'
+        '404':
+          description: Not Found
       operationId: get-webhook-webhook_id
       description: Retrieves the webhook endpoint with the given ID
       tags:
@@ -295,6 +305,8 @@ paths:
       responses:
         '200':
           description: OK
+        '404':
+          description: Not Found
       description: Deletes webhook endpoint configuration
       tags:
         - Webhook Endpoints
@@ -338,6 +350,8 @@ paths:
                     url: 'https://example.com/my/webhook/endpoint'
                 type: object
                 title: '| Webhook Endpoint Object'
+        '404':
+          description: Not Found
       description: Edit a Webhook Endpoint
       parameters: []
       requestBody:
@@ -388,13 +402,14 @@ paths:
               examples:
                 Example:
                   value:
-                    client_id: DIYE8DFYAU62ALSDOE
-                    status: success
+                    merchant_client_id: test1021
+                    note: rft
+                    payment_client_id: wish001
+                    amount: '123.30'
                     currency: USD
-                    amount: '19.85'
-                    note: rfb
-        '400':
-          description: Bad Request
+                    id: '2020011923354002'
+                    merchant_id: '8866003600000853'
+                    status: success
         '404':
           description: Not Found
         '':
@@ -439,16 +454,20 @@ paths:
           description: |-
             Codes:
 
-            | Code | Description |
-            |------|------------|
-            |154011 | Currency not supported|
-            |999995 | Invalid Parameter|
+            | Code | Description |Client Action | Lianlian Pay Action |
+            |------|------------|--------------|-------------|
+            |154011 | Currency not supported|Client validates Currency used in request. Supported currency: **USD**, **CNY** |Lianlian Pay to wait for a new request|
+            |999995 | Invalid Parameter. |Client updates request body values according to error code returned by Lianlina Pay.|Lianlian Pay to wait for a new request|
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
               examples:
-                Example:
+                '99995':
+                  value:
+                    code: '99995'
+                    message: "[merchant_client_id] can't be empty."
+                '154011':
                   value:
                     code: '154011'
                     message: Currency not support.
@@ -509,7 +528,7 @@ components:
         note:
           type: string
           description: Human readable description of Merchant
-        registraton_complete:
+        registration_complete:
           type: boolean
           description: |-
             State of merchant registration process.  One of:
@@ -521,7 +540,7 @@ components:
       required:
         - merchant_client_id
         - status
-        - registraton_complete
+        - registration_complete
     Error:
       title: '| Error Object'
       type: object
@@ -530,9 +549,9 @@ components:
 
         These error codes can occur regardless of API.  For API specific error codes see individual API documentation.
 
-        | Code | Message |
-        |------|---------|
-        |999995 | Invalid Parameter|
+        | Code | Message | Client Action | Lianlian Pay Action |
+        |------|---------|--|--|
+        |999995 | Invalid Parameter|Client updates request body values according to error code returned by Lianlina Pay.|ianlian Pay to wait for a new request|
       x-examples: {}
       properties:
         code:
