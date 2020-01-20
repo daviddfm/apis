@@ -549,9 +549,9 @@ components:
 
         These error codes can occur regardless of API.  For API specific error codes see individual API documentation.
 
-        | Code | Message |
-        |------|---------|
-        |999995 | Invalid Parameter|
+        | Code | Message | Client Action | Lianlian Pay Action |
+        |------|---------|--|--|
+        |999995 | Invalid Parameter|Client updates request body values according to error code returned by Lianlina Pay.|ianlian Pay to wait for a new request|
       x-examples: {}
       properties:
         code:
