@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Payments
   version: '1.0'
-  description: The Lian Lian Global Payments API is designed for Marketplaces to link their accounts with Lian Lian merchant accounts and send them cross currency payments.
+  description: The Lianlian Global Payments API is designed for Marketplaces to link their accounts with Lianlian merchant accounts and send them cross currency payments.
   contact:
     name: David Dawson
     email: david.dawson@lianlian.com
@@ -21,26 +21,26 @@ paths:
               examples:
                 Example 1:
                   value:
+                    shop_url: 'https://www.wish.com/merchant/wish001'
                     note: rft
                     registration_complete: true
-                    merchant_client_id: wish001
-                    shop_url: 'https://www.wish.com/merchant/wish001'
-                    id: '8866003800000564'
                     status: success
+                    id: '8866003800000564'
+                    merchant_client_id: wish001
                 Example 2:
                   value:
+                    registration_url: 'https://gtest.lianlianpay-inc.com/auth/platform?platformName=WISH&handleCode=e458644e-f0bb-4536-a42a-d02c7020946d'
+                    shop_url: 'https://www.wish.com/merchant/wish002'
                     note: rft
                     registration_complete: false
                     merchant_client_id: wish002
-                    registration_url: 'https://gtest.lianlianpay-inc.com/auth/platform?platformName=WISH&handleCode=e458644e-f0bb-4536-a42a-d02c7020946d'
-                    shop_url: 'https://www.wish.com/merchant/wish002'
         '400':
           description: |
             Codes:
 
-            | Code | Description |Client Action | Lianlian Pay Action |
+            | Code | Description |Client Action | LianLian Action |
             |------|------------|---------|---------|
-            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlina Pay.|Lianlian Pay to wait for a new request|
+            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlina Pay.|Waits for a new request|
           content:
             application/json:
               schema:
@@ -50,16 +50,13 @@ paths:
                   value:
                     code: '999995'
                     message: "[merchant_client_id] can't be empty."
-      description: "Starts asynchronous process of registering a new merchant with Lianlian Pay.  \n\nOn successful return, if `registration_complete` is `false`, platform shall use `registration_url` to redirect the merchant to in order to begin the Lianlian Pay Registration Experience.  \n\nWhen registration is successfully completed the user will be redirected to the passed in `redirect_url`"
+      description: "Starts asynchronous process of registering a new merchant with LianLian.  \n\nOn successful return, if `registration_complete` is `false`, platform shall use `registration_url` to redirect the merchant to in order to begin the LianLian Registration Experience.  \n\nWhen registration is successfully completed the user will be redirected to the passed in `redirect_url`"
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                merchant_client_id:
-                  type: string
-                  description: Merchant ID as known by the client platform
                 store_name:
                   type: string
                   description: Store name as known by the calling platform
@@ -72,6 +69,9 @@ paths:
                 note:
                   type: string
                   description: Note to be used by customer support if needed
+                merchant_client_id:
+                  type: string
+                  description: Merchant ID as known by the client platform
               required:
                 - merchant_client_id
                 - store_name
@@ -99,15 +99,15 @@ paths:
               examples:
                 Example:
                   value:
-                    registration_complete: true
-                    merchant_client_id: wish001
                     shop_url: 'https://www.wish.com/merchant/wish001'
+                    registration_complete: true
                     id: '8866003800000564'
                     status: success
+                    merchant_client_id: wish001
         '404':
           description: Not Found
       operationId: get-merchants-merchant.id
-      description: Get information about the merchant - in particular their status on the Lianlian Pay platform.
+      description: Get information about the merchant - in particular their status on the LianLian platform.
   /payments:
     parameters: []
     post:
@@ -123,24 +123,24 @@ paths:
               examples:
                 Example:
                   value:
-                    merchant_client_id: test1021
-                    note: USD
-                    payment_client_id: wish001
-                    amount: '123.30'
-                    currency: USD
-                    id: '2020012026476843'
-                    merchant_id: '8866003600000853'
                     status: ongoing
+                    currency: USD
+                    amount: '123.30'
+                    note: USD
+                    merchant_id: '8866003600000853'
+                    id: '2020012026476843'
+                    payment_client_id: wish001
+                    merchant_client_id: test1021
         '400':
           description: |-
             Error - payment not processed
 
-            | Code | Message | Client Action | Lianlian Pay Action |
-            |------|---------|--|--|
-            |154008 | Client has insufficient balance to pay merchant| Client to wire more funds to Lianlian Pay account | Lianlian Pay to wait for funds |
-            |154011 | Currency not supported| Client validates Currency used in request. Supported currency: **USD**, **CNY** |Lianlian Pay to wait for a new request|
-            |154016 | Merchant is blocked from receiving payments| Suggest merchant to contact Lianlian Pay for details |Lianlian Pay to wait for merchant updates information on Lianlian Pay portal|
-            |999995 | Invalid Parameter|Client updates request body values according to error code returned by Lianlina Pay.|ianlian Pay to wait for a new request|
+            | Code | Message | Client Action | LianLian Action |
+            |------|---------|-------|---------|
+            |154008 | Client has insufficient balance to pay merchant| Client to wire more funds to LianLian account | Waits for funds |
+            |154011 | Currency not supported| Client validates Currency used in request. Supported currencies: **USD**, **CNY** |Waits for a new request|
+            |154016 | Merchant is blocked from receiving payments| Suggest merchant to contact LianLian for details |Is typically having offline discussion with merchant|
+            |999995 | Invalid Parameter|Client updates request body values according to error code returned by LianLian.|Waits for a new request|
           content:
             application/json:
               schema:
@@ -158,7 +158,7 @@ paths:
                   value:
                     code: '999995'
                     message: "[merchant_client_id] can't be empty."
-      description: "Switch to using /payments as root of path - and have merchant_client_id in POST body\n\nInitiates a payment to specific merchant. \n\nNote this call is Idempotent if sent with the same payment_client_id and last payment request was successfull.  In this case the additional HTTP Response Header `Request-Repeated: true` will be returned.  If the original request failed, a new payment request will retry the payment.\n\nNote: This synchronous call, on success, only guarantees the money has been debited from the client account.  Actual payment takes too long to be done synchronously and will be completed within a few days typically.\n\nSteps within API:\n\n* **Money Debited** from client's account\n can fail from insufficient funds\n* **Verify Merchant Registration** information is valid\n  If Merchant is unknown, call fails\n  If Merchant status is `blocked`, call fails \n* **Send Money** to merchant\n  If any issues arise, Lianlian Pay customer support helps fix issues and finalize transfer\n\nCall returns payment object including payment status."
+      description: "Switch to using /payments as root of path - and have merchant_client_id in POST body\n\nInitiates a payment to specific merchant. \n\nThis call is Idempotent if sent with the same payment_client_id and last payment request was successfull.  In this case the additional HTTP Response Header `Request-Repeated: true` will be returned.  If the original request failed, a new payment request will retry the payment.\n\nNote: This synchronous call, on success, only guarantees the money has been debited from the client account.  Actual payment takes too long to be done synchronously and will be completed within a few days typically.\n\nSteps within API:\n\n* **Money Debited** from client's account\n can fail from insufficient funds\n* **Verify Merchant Registration** information is valid\n  If Merchant is unknown, call fails\n  If Merchant status is `blocked`, call fails \n* **Send Money** to merchant\n  If any issues arise, LianLian customer support helps fix issues and finalize transfer\n\nCall returns payment object including payment status."
       tags:
         - Payments
       requestBody:
@@ -176,6 +176,9 @@ paths:
                 currency:
                   type: string
                   description: 3 letter code of payment currency
+                  enum:
+                    - CNY
+                    - USD
                 amount:
                   type: number
                   description: Amount to pay merchant
@@ -183,204 +186,11 @@ paths:
                   type: string
                   description: Additional information to help track payment
               required:
+                - merchant_client_id
                 - payment_client_id
                 - currency
                 - amount
-                - merchant_client_id
         description: ''
-  /webhook:
-    get:
-      summary: List All Webhook Endpoints
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Webhook-Endpoint'
-      operationId: get-webhook
-      description: Returns a list of your webhook endpoints
-      tags:
-        - Webhook Endpoints
-    post:
-      summary: Create Webhook Endpoint
-      operationId: post-webhook
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                x-tags:
-                  - Webhook Endpoints
-                properties:
-                  id:
-                    type: string
-                  created:
-                    type: number
-                    description: Time at which the object was created. Measured in seconds since the Unix epoch
-                  enable_events:
-                    type: array
-                    description: "The list of events to enable for this endpoint. ['*'] indicates that all events are enabled, except those that require explicit selection"
-                    items:
-                      type: string
-                  is_enabled:
-                    type: boolean
-                    description: The status of the webhook. It can be enabled or disabled.
-                  url:
-                    type: string
-                    description: The URL of the webhook endpoint
-                x-examples:
-                  Example:
-                    id: we_1Fya1E2eZvKYlo2COY23Yyij
-                    created: 1578472560
-                    enabled_events:
-                      - payment.status
-                      - merchant.status
-                    is_live: false
-                    is_enabled: true
-                    url: 'https://example.com/my/webhook/endpoint'
-                type: object
-                title: '| Webhook Endpoint Object'
-      description: 'A webhook endpoint must have a url and a list of enabled_events. You may optionally specify the Boolean connect parameter. If set to true, then a Connect webhook endpoint that notifies the specified url about events from all connected accounts is created; otherwise an account webhook endpoint that notifies the specified url only about events from your account is created. You can also create webhook endpoints in the webhooks settings section of the Dashboard.'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                events:
-                  items:
-                    $ref: '#/components/schemas/Webhook-Events'
-                  enum:
-                    - payment.status
-                    - merchant.status
-                  description: |-
-                    List of events a client can sign up for Webhook calls.
-
-                    | Value | Description |
-                    |--|--|
-                    | payment.status | Occurs whenever the status of a payment changes |
-                    | merchant.status | Occurs whenever the status of a merhant changes |
-                  title: '| Webhook Events Enumeration'
-                  type: array
-                url:
-                  type: string
-                is_enabled:
-                  type: boolean
-                  description: Enabled or not - default is true
-              required:
-                - events
-                - url
-      tags:
-        - Webhook Endpoints
-  '/webhook/{webhook_id}':
-    parameters:
-      - schema:
-          type: string
-        name: webhook_id
-        in: path
-        required: true
-        description: ID of Webhook Endpoint
-    get:
-      summary: Get Webhook Endpoint
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Webhook-Endpoint'
-        '404':
-          description: Not Found
-      operationId: get-webhook-webhook_id
-      description: Retrieves the webhook endpoint with the given ID
-      tags:
-        - Webhook Endpoints
-    delete:
-      summary: Delete Webhook Endpoint
-      operationId: delete-webhook-webhook_id
-      responses:
-        '200':
-          description: OK
-        '404':
-          description: Not Found
-      description: Deletes webhook endpoint configuration
-      tags:
-        - Webhook Endpoints
-    put:
-      summary: Modify Webhook Endpoint
-      operationId: put-webhook-webhook_id
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                x-tags:
-                  - Webhook Endpoints
-                properties:
-                  id:
-                    type: string
-                  created:
-                    type: number
-                    description: Time at which the object was created. Measured in seconds since the Unix epoch
-                  enable_events:
-                    type: array
-                    description: "The list of events to enable for this endpoint. ['*'] indicates that all events are enabled, except those that require explicit selection"
-                    items:
-                      type: string
-                  is_enabled:
-                    type: boolean
-                    description: The status of the webhook. It can be enabled or disabled.
-                  url:
-                    type: string
-                    description: The URL of the webhook endpoint
-                x-examples:
-                  Example:
-                    id: we_1Fya1E2eZvKYlo2COY23Yyij
-                    created: 1578472560
-                    enabled_events:
-                      - payment.status
-                      - merchant.status
-                    is_live: false
-                    is_enabled: true
-                    url: 'https://example.com/my/webhook/endpoint'
-                type: object
-                title: '| Webhook Endpoint Object'
-        '404':
-          description: Not Found
-      description: Edit a Webhook Endpoint
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                events:
-                  items:
-                    $ref: '#/components/schemas/Webhook-Events'
-                  enum:
-                    - payment.status
-                    - merchant.status
-                  description: |-
-                    List of events a client can sign up for Webhook calls.
-
-                    | Value | Description |
-                    |--|--|
-                    | payment.status | Occurs whenever the status of a payment changes |
-                    | merchant.status | Occurs whenever the status of a merhant changes |
-                  title: '| Webhook Events Enumeration'
-                  type: array
-                is_enabled:
-                  type: boolean
-                url:
-                  type: string
-      tags:
-        - Webhook Endpoints
   '/payments/payment_client_id/{payment_client_id}':
     parameters:
       - schema:
@@ -402,14 +212,14 @@ paths:
               examples:
                 Example:
                   value:
-                    merchant_client_id: test1021
-                    note: rft
-                    payment_client_id: wish001
-                    amount: '123.30'
-                    currency: USD
-                    id: '2020011923354002'
-                    merchant_id: '8866003600000853'
                     status: success
+                    currency: USD
+                    amount: '123.30'
+                    note: rft
+                    merchant_id: '8866003600000853'
+                    id: '2020011923354002'
+                    payment_client_id: wish001
+                    merchant_client_id: test1021
         '404':
           description: Not Found
         '':
@@ -454,10 +264,10 @@ paths:
           description: |-
             Codes:
 
-            | Code | Description |Client Action | Lianlian Pay Action |
+            | Code | Description |Client Action | LianLian Action |
             |------|------------|--------------|-------------|
-            |154011 | Currency not supported|Client validates Currency used in request. Supported currency: **USD**, **CNY** |Lianlian Pay to wait for a new request|
-            |999995 | Invalid Parameter. |Client updates request body values according to error code returned by Lianlina Pay.|Lianlian Pay to wait for a new request|
+            |154011 | Currency not supported|Client validates Currency used in request. Supported currency: **USD**, **CNY** |Waits for a new request|
+            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlina Pay.|Waits for a new request|
           content:
             application/json:
               schema:
@@ -478,7 +288,7 @@ paths:
           in: query
           name: currency
           description: Repeat parameter to specify one 3 letter currency codes to return balance in.
-      description: "Returns Total balance of client's account within Lianlian Pay in one or more currencies.  Not specifying a currency will return the default currencies configured for client.  \n\nTypically this is USD & CNY."
+      description: "Returns Total balance of client's account within LianLian in one or more currencies.  Not specifying a currency will return the default currencies configured for client.  \n\nTypically this is USD & CNY."
     parameters: []
 components:
   schemas:
@@ -494,7 +304,7 @@ components:
         id:
           type: string
           description: |-
-            Lianlian Pay merchant ID. Merchant shall use this ID to contact Lianlian Pay for any payment issues.
+            LianLian merchant ID. Merchant shall use this ID to contact LianLian for any payment issues.
 
             Non-existant if `registraton_complete` is false.
         merchant_client_id:
@@ -511,7 +321,7 @@ components:
             | Value | Description |
             |--------|------------|
             | ongoing | Registration ongoing |
-            | need_info | Merchant must communicate with Lian Lian |
+            | need_info | Merchant must communicate with Lianlian |
             | success | Ready for delivery money to merchant |
             | blocked | User has been blacklisted from receiving payments |
           enum:
@@ -521,7 +331,7 @@ components:
             - ongoing
         registration_url:
           type: string
-          description: "URL to redirect merchant to in order to start registration on Lianlian Pay platform. \n \nNon-existent if `registration_complete` is true."
+          description: "URL to redirect merchant to in order to start registration on LianLian platform. \n \nNon-existent if `registration_complete` is true."
         shop_url:
           type: string
           description: "URL of Merchant's shop.  For some clients this URL is auto-generated from `client_id`"
@@ -549,9 +359,9 @@ components:
 
         These error codes can occur regardless of API.  For API specific error codes see individual API documentation.
 
-        | Code | Message | Client Action | Lianlian Pay Action |
+        | Code | Message | Client Action | LianLian Action |
         |------|---------|--|--|
-        |999995 | Invalid Parameter|Client updates request body values according to error code returned by Lianlina Pay.|ianlian Pay to wait for a new request|
+        |999995 | Invalid Parameter|Client updates request body values according to error code returned by Lianlina Pay.|Lianlian to wait for a new request|
       x-examples: {}
       properties:
         code:
@@ -563,54 +373,6 @@ components:
       required:
         - code
         - message
-    Webhook-Endpoint:
-      title: '| Webhook Endpoint Object'
-      type: object
-      x-examples:
-        Example:
-          id: we_1Fya1E2eZvKYlo2COY23Yyij
-          created: 1578472560
-          enabled_events:
-            - payment.status
-            - merchant.status
-          is_live: false
-          is_enabled: true
-          url: 'https://example.com/my/webhook/endpoint'
-      properties:
-        id:
-          type: string
-        created:
-          type: number
-          description: Time at which the object was created. Measured in seconds since the Unix epoch
-        enable_events:
-          type: array
-          description: "The list of events to enable for this endpoint. ['*'] indicates that all events are enabled, except those that require explicit selection"
-          items:
-            type: string
-        is_enabled:
-          type: boolean
-          description: The status of the webhook. It can be enabled or disabled.
-        url:
-          type: string
-          description: The URL of the webhook endpoint
-      x-tags:
-        - Webhook Endpoints
-    Webhook-Events:
-      type: string
-      title: '| Webhook Events Enumeration'
-      enum:
-        - payment.status
-        - merchant.status
-      description: |-
-        List of events a client can sign up for Webhook calls.
-
-        | Value | Description |
-        |--|--|
-        | * | All events |
-        | payment.status | Occurs whenever the status of a payment changes |
-        | merchant.status | Occurs whenever the status of a merhant changes |
-      x-tags:
-        - Webhook Endpoints
     Payment:
       title: '| Payment Object'
       type: object
@@ -620,13 +382,13 @@ components:
       properties:
         id:
           type: string
-          description: Lian Lian Payment ID
+          description: LianLianment ID
         payment_client_id:
           type: string
           description: "Client's Payment ID for this payment request.  **Must be unique and is usually a UUID**"
         merchant_id:
           type: string
-          description: "Lian Lian's Merchant ID receiving payment"
+          description: "Lianlian's Merchant ID receiving payment"
         merchant_client_id:
           type: string
           description: "Client's Merchant ID receiving payment"
@@ -639,7 +401,7 @@ components:
             | Value | Description |
             |--------|------------|
             | ongoing | Payment ongoing normally |
-            | need_info | Merchant must communicate with Lian Lian |
+            | need_info | Merchant must communicate with Lianlian |
             | success | Payment complete |
           enum:
             - need_info
@@ -648,6 +410,9 @@ components:
         currency:
           type: string
           description: 3 letter code of currency used
+          enum:
+            - CNY
+            - USD
         amount:
           type: string
           description: Amount of payment in `currency`

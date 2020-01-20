@@ -50,7 +50,7 @@ Create a `payload` string which is the following separated by `&`
 
 Put typical GET and POST examples here.
 
-Example POST `payload`:
+Example POST `payload` (Note there is no trailing `&` when no query string is present):
 ```
 POST&payments/v1/merchants&19879234&{"currency":"USD"}
 ```
@@ -160,11 +160,6 @@ See definition of Error Model in API Reference.
 Each API request has an associated request identifier. You can find this value in the response headers, under `Request-Id`. If you need to contact us about a specific request, providing the request identifier will ensure the fastest possible resolution.
 
 
-# Idempotent Requests
-
-Some requests such as the payment POST request are idempotent.  When a repeat request is sent with the same Client ID, the service responds with the same success or failure response as it is assumed the client never received it to begin with.  In any repeat responses, however, a new header `Repeat-Id` is addd and contains the Request Id Of the original response.  In this way the client knows the response is a repeat - this helps in debugging issues.
-
-
 # Argument and Field Naming
 
 LianLian arguments and object field names follow standard underscore naming such as:
@@ -180,10 +175,5 @@ https://api...com/resource/?filter_by="filter"
 }
 ```
 
-# Webhook Endpoints
-
-You can configure webhook endpoints via the API to be notified about events that happen in your Lian Lian Group account.
-
-Note: The Webhook APIs are not implemented yet.  This is a Draft of the API design coming soon...
 
 
