@@ -40,7 +40,7 @@ paths:
 
             | Code | Description |Client Action | LianLian Action |
             |------|------------|---------|---------|
-            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlina Pay.|Waits for a new request|
+            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlian Pay.|Waits for a new request|
           content:
             application/json:
               schema:
@@ -62,7 +62,7 @@ paths:
                   description: Store name as known by the calling platform
                 redirect_url:
                   type: string
-                  description: 'URL Lianlina Pay will redirect to at the end of a successful registration process.  '
+                  description: 'URL Lianlian Pay will redirect to at the end of a successful registration process.  '
                 shop_url:
                   type: string
                   description: URL of merchant store if URL can’t be algorithmically produced from merchant_id
@@ -267,7 +267,7 @@ paths:
             | Code | Description |Client Action | LianLian Action |
             |------|------------|--------------|-------------|
             |154011 | Currency not supported|Client validates Currency used in request. Supported currency: **USD**, **CNY** |Waits for a new request|
-            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlina Pay.|Waits for a new request|
+            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlian Pay.|Waits for a new request|
           content:
             application/json:
               schema:
@@ -361,7 +361,7 @@ components:
 
         | Code | Message | Client Action | LianLian Action |
         |------|---------|--|--|
-        |999995 | Invalid Parameter|Client updates request body values according to error code returned by Lianlina Pay.|Lianlian to wait for a new request|
+        |999995 | Invalid Parameter|Client updates request body values according to error code returned by Lianlian Pay.|Lianlian to wait for a new request|
       x-examples: {}
       properties:
         code:
