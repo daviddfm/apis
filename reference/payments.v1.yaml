@@ -463,14 +463,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               examples:
-                Example:
-                  value:
-                    code: '154011'
-                    message: Currency not support.
-                example-2:
+                '99995':
                   value:
                     code: '99995'
                     message: "[merchant_client_id] can't be empty."
+                '154011':
+                  value:
+                    code: '154011'
+                    message: Currency not support.
       operationId: get-balance
       parameters:
         - schema:
