@@ -40,7 +40,7 @@ paths:
 
             | Code | Description |Client Action | LianLian Action |
             |------|------------|---------|---------|
-            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlian Pay.|Waits for a new request|
+            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlian.|Waits for a new request|
           content:
             application/json:
               schema:
@@ -62,7 +62,7 @@ paths:
                   description: Store name as known by the calling platform
                 redirect_url:
                   type: string
-                  description: 'URL Lianlian Pay will redirect to at the end of a successful registration process.  '
+                  description: 'URL Lianlian will redirect to at the end of a successful registration process.  '
                 shop_url:
                   type: string
                   description: URL of merchant store if URL can’t be algorithmically produced from merchant_id
@@ -158,7 +158,7 @@ paths:
                   value:
                     code: '999995'
                     message: "[merchant_client_id] can't be empty."
-      description: "Switch to using /payments as root of path - and have merchant_client_id in POST body\n\nInitiates a payment to specific merchant. \n\nThis call is Idempotent if sent with the same payment_client_id and last payment request was successfull.  In this case the additional HTTP Response Header `Request-Repeated: true` will be returned.  If the original request failed, a new payment request will retry the payment.\n\nNote: This synchronous call, on success, only guarantees the money has been debited from the client account.  Actual payment takes too long to be done synchronously and will be completed within a few days typically.\n\nSteps within API:\n\n* **Money Debited** from client's account\n can fail from insufficient funds\n* **Verify Merchant Registration** information is valid\n  If Merchant is unknown, call fails\n  If Merchant status is `blocked`, call fails \n* **Send Money** to merchant\n  If any issues arise, LianLian customer support helps fix issues and finalize transfer\n\nCall returns payment object including payment status."
+      description: "Initiates a payment to specific merchant. \n\nThis call is Idempotent if sent with the same payment_client_id and last payment request was successfull.  In this case the additional HTTP Response Header `Request-Repeated: true` will be returned.  If the original request failed, a new payment request will retry the payment.\n\nSteps within API:\n\n* **Money Debited** from client's account\n can fail from insufficient funds\n* **Verify Merchant Registration** information is valid\n  If Merchant is unknown, call fails\n  If Merchant status is `blocked`, call fails \n* **Send Money** to merchant\n  If any issues arise, LianLian customer support helps fix issues and finalize transfer\n\nThis call returns HTTP Status 200 on success and returns the payment object including Lianlian internal payment status. Success guarantees the money has been debited from the client account not that the actual payment has completed as it takes too long to be done synchronously and will be completed within a few days typically.  It does guarantee, however, that the payment will eventually happen.\n\nOn failure the API returns HTTP Status 400 with an Error object specifying the error code why the payment failed.\n"
       tags:
         - Payments
       requestBody:
@@ -228,7 +228,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Payment'
       operationId: get-merchants-merchant_id-payments-client_id-payment_id
-      description: "Get a Merchant's Payment Object including status."
+      description: "Get a Merchant's Payment Object including internal Lianlian payment status.\n\nThe API returns HTTP Status 200 with the related payment object if the payment was successful.  \n\nThe API returns HTTP Status 404 if the `POST /payments` call returned an error as the **payment_client_id** is not in the system and not recognized."
   /balance:
     get:
       summary: Get Client Balance
@@ -267,20 +267,20 @@ paths:
             | Code | Description |Client Action | LianLian Action |
             |------|------------|--------------|-------------|
             |154011 | Currency not supported|Client validates Currency used in request. Supported currency: **USD**, **CNY** |Waits for a new request|
-            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlian Pay.|Waits for a new request|
+            |999995 | Invalid Parameter |Client updates request body values according to error code returned by Lianlian.|Waits for a new request|
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
               examples:
-                '99995':
-                  value:
-                    code: '99995'
-                    message: "[merchant_client_id] can't be empty."
                 '154011':
                   value:
                     code: '154011'
                     message: Currency not support.
+                '999995':
+                  value:
+                    code: '999995'
+                    message: "[merchant_client_id] can't be empty."
       operationId: get-balance
       parameters:
         - schema:
@@ -361,7 +361,7 @@ components:
 
         | Code | Message | Client Action | LianLian Action |
         |------|---------|--|--|
-        |999995 | Invalid Parameter|Client updates request body values according to error code returned by Lianlian Pay.|Lianlian to wait for a new request|
+        |999995 | Invalid Parameter|Client updates request body values according to error code returned by Lianlian.|Lianlian to wait for a new request|
       x-examples: {}
       properties:
         code:
@@ -396,7 +396,7 @@ components:
           type: string
           title: '| Payment Status Enumeration'
           description: |-
-            State a Payment is in.  One of:
+            This status indicates the stage payment is at within Lianlian systems.  One of:
 
             | Value | Description |
             |--------|------------|
