@@ -8,3 +8,8 @@ Install md-to-pdf NPM module
 
 Then Print to PDF
 
+# Merge
+
+[Use PDF Merge](https://pdfmerge.com)
+
+to put together Overview and API
