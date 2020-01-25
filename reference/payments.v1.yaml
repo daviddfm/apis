@@ -180,7 +180,7 @@ paths:
                     - CNY
                     - USD
                 amount:
-                  type: number
+                  type: string
                   description: Amount to pay merchant
                 note:
                   type: string
@@ -222,11 +222,6 @@ paths:
                     merchant_client_id: test1021
         '404':
           description: Not Found
-        '':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Payment'
       operationId: get-merchants-merchant_id-payments-client_id-payment_id
       description: "Get a Merchant's Payment Object including internal Lianlian payment status.\n\nThe API returns HTTP Status 200 with the related payment object if the payment was successful.  \n\nThe API returns HTTP Status 404 if the `POST /payments` call returned an error as the **payment_client_id** is not in the system and not recognized."
   /balance:
@@ -431,7 +426,6 @@ tags:
   - name: Balance
   - name: Merchants
   - name: Payments
-  - name: Webhook Endpoints
 servers:
   - description: Sandbox
     url: 'https://global-api-sandbox.lianlianpay-inc.com/payments/v1'
